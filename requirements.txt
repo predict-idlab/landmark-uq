@@ -1,0 +1,8 @@
+monai
+lightning
+jsonargparse[signatures, omegaconf]>=4.30.0
+segmentation_models_pytorch
+pynrrd
+landmarker
+shapely
+seaborn

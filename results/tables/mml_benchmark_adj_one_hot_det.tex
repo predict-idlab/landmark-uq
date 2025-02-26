@@ -1,0 +1,12 @@
+\begin{tabular}{llrrrrrrrrrr}
+\toprule
+\multicolumn{2}{r}{} & \multicolumn{5}{r}{Validation} & \multicolumn{5}{r}{Test} \\
+Model Name & Decoder & PE & SDR 2mm & SDR 2.5mm & SDR 3mm & SDR 4mm & PE & SDR 2mm & SDR 2.5mm & SDR 3mm & SDR 4mm \\
+\midrule
+ONE HOT & weighted spatial mean & 2.122100 & 69.900000 & 78.320000 & 83.930000 & 89.410000 & 1.693700 & 77.500000 & 86.430000 & 90.240000 & 94.290000 \\
+ONE HOT ENSEMBLE & local soft argmax & 1.694700 & 75.640000 & 86.610000 & 89.290000 & 92.860000 & 1.392200 & 81.670000 & 91.310000 & 93.210000 & 96.310000 \\
+ONE HOT ENSEMBLE LS & local soft argmax & 1.736600 & 74.110000 & 83.420000 & 88.140000 & 92.860000 & 1.469300 & 81.670000 & 89.400000 & 93.100000 & 96.550000 \\
+ONE HOT MC & local soft argmax & 2.054000 & 70.540000 & 82.020000 & 85.590000 & 90.180000 & 1.674000 & 76.310000 & 88.210000 & 90.710000 & 93.570000 \\
+ONE HOT MC LS & local soft argmax & 2.208800 & 69.390000 & 77.680000 & 83.420000 & 89.160000 & 1.664800 & 78.690000 & 86.190000 & 90.240000 & 95.480000 \\
+\bottomrule
+\end{tabular}

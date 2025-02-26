@@ -1,0 +1,103 @@
+trainer:
+  logger: true
+  max_epochs: 1000
+  num_sanity_val_steps: 2
+  gradient_clip_val: 10000.0
+  gradient_clip_algorithm: norm
+  accelerator: auto
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_avg_loss
+        patience: 30
+        mode: min
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val_avg_loss
+        mode: min
+        save_top_k: 1
+        dirpath: ../results/lightning_model_checkpoints/ISBI2015
+        filename: ISBI2015_shr_unet_NLLLoss_val_fold2_test_fold3
+
+model:
+  class_path: StaticHeatmapRegression
+  init_args:
+    model:
+      class_path: segmentation_models_pytorch.Unet
+      init_args:
+        encoder_name: resnet34
+        encoder_weights: imagenet
+        in_channels: 1
+        classes: 19
+        decoder_channels: [256, 128, 64, 32, 32]
+    loss:
+      class_path: landmarker.losses.NLLLoss
+    final_activation:
+      class_path: landmarker.models.utils.SoftmaxND
+      init_args:
+        spatial_dims: 2
+    decoder_method: local_soft_argmax
+    lr: 1e-4
+
+data:
+  class_path: ISBI2015LightningDataModule
+  init_args:
+    data_dir: ../data
+    kind: mask
+    val_fold: 2
+    test_fold: 3
+    batch_size: 8
+    num_workers: 5
+    dim_img: [512, 512]
+    train_transform:
+      class_path: monai.transforms.Compose
+      init_args:
+        transforms:
+          - class_path: landmarker.transforms.images.UseOnlyFirstChannel
+            init_args:
+              keys: [image]
+          - class_path: monai.transforms.RandGaussianNoised
+            init_args:
+              keys: [image]
+              prob: 0.2
+              mean: 0.0
+              std: 0.1
+              dtype: null
+          - class_path: monai.transforms.RandScaleIntensityd
+            init_args:
+              keys: [image]
+              prob: 0.2
+              factors: 0.25
+              dtype: null
+          - class_path: monai.transforms.RandAdjustContrastd
+            init_args:
+              keys: [image]
+              prob: 0.2
+              gamma: [0.5, 4.5]
+          - class_path: monai.transforms.RandHistogramShiftd
+            init_args:
+              keys: [image]
+              prob: 0.2
+          - class_path: monai.transforms.ScaleIntensityd
+            init_args:
+              keys: [image]
+              dtype: null
+          - class_path: monai.transforms.RandAffined
+            init_args:
+              keys: [image]
+              prob: 1.0
+              rotate_range: [-0.3, 0.3]
+              translate_range: [-10, 10]
+              scale_range: [-0.1, 0.1]
+    inference_transform:
+      class_path: monai.transforms.Compose
+      init_args:
+        transforms:
+          - class_path: landmarker.transforms.images.UseOnlyFirstChannel
+            init_args:
+              keys: [image]
+          - class_path: monai.transforms.ScaleIntensityd
+            init_args:
+              keys: [image]
+              dtype: null
+

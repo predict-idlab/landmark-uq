@@ -1,0 +1,81 @@
+trainer:
+  logger: true
+  max_epochs: 1000
+  num_sanity_val_steps: 2
+  accelerator: auto
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_avg_loss
+        patience: 30
+        mode: min
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val_avg_loss
+        mode: min
+        save_top_k: 1
+        dirpath: ../results/lightning_model_checkpoints/MML/ensemble
+        filename: MML_shr_unet
+
+model:
+  class_path: StaticHeatmapRegression
+  init_args:
+    model:
+      class_path: monai.networks.nets.FlexibleUNet
+      init_args:
+        in_channels: 1
+        out_channels: 14
+        backbone: efficientnet-b0
+        pretrained: true
+        decoder_channels: [128, 128, 128, 128, 128]
+        spatial_dims: 3
+        norm: batch
+        act: relu
+        dropout: 0.5
+        decoder_bias: false
+        upsample: nontrainable
+        pre_conv: default
+        interp_mode: nearest
+        is_pad: true
+        
+    loss:
+      class_path: landmarker.losses.NLLLoss
+      init_args:
+        spatial_dims: 3
+    final_activation:
+      class_path: landmarker.models.utils.SoftmaxND
+      init_args:
+        spatial_dims: 3
+    spatial_dims: 3
+    decoder_method: local_soft_argmax
+    lr: 1e-4
+
+data:
+  class_path: MLLLightningDataModule
+  init_args:
+    data_dir: ../data
+    train_extended: False
+    original_crop: True
+    benchmark: False
+    kind: mask
+    batch_size: 4
+    num_workers: 7
+    dim_img: [128, 128, 64]
+    train_transform:
+      class_path: monai.transforms.Compose
+      init_args:
+        transforms:
+          - class_path: monai.transforms.ScaleIntensityd
+            init_args:
+              keys: [image]
+              dtype: null
+    inference_transform:
+      class_path: monai.transforms.Compose
+      init_args:
+        transforms:
+          - class_path: monai.transforms.ScaleIntensityd
+            init_args:
+              keys: [image]
+              dtype: null
+    
+
